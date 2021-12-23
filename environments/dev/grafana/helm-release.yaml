@@ -1,0 +1,28 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: grafana
+spec:
+  interval: 1h
+  install:
+    createNamespace: false
+  chart:
+    spec:
+      chart: grafana
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+  values:
+    serviceMonitor:
+      enabled: true
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        kubernetes.io/tls-acme: "true"
+      hosts:
+      - grafana.dev.dorf.world
+      tls:
+      - secretName: grafana-tls
+        hosts:
+        - grafana.dev.dorf.world
