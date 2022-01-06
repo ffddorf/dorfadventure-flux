@@ -10,5 +10,4 @@ spec:
       name: letsencrypt-staging-issuer-account-key
     solvers:
     - http01:
-        ingress:
-          class: {}
+        ingress: {}
