@@ -10,5 +10,4 @@ spec:
       name: letsencrypt-prod-issuer-account-key
     solvers:
     - http01:
-        ingress:
-          class: {}
+        ingress: {}
