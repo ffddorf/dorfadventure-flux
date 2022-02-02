@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jitsi
+  namespace: app-workadventure-jitsi
+data:
+  DOCKER_HOST_ADDRESS: "45.151.166.29"
+  ENABLE_P2P: "false"
+  JICOFO_AUTH_USER: focus
+  JVB_AUTH_USER: jvb
+  JVB_BREWERY_MUC: jvbbrewery
+  JVB_PORT: "10000"
+  JVB_STUN_SERVERS: stun.freifunk-duesseldorf.de:3478
+  JVB_TCP_HARVESTER_DISABLED: "true"
+  PUBLIC_URL: https://jitsi.dev.dorf.world
+  TZ: Europe/Berlin
+  XMPP_BOSH_URL_BASE: http://127.0.0.1:5280
+  XMPP_MUC_DOMAIN: muc.meet.jitsi
+  XMPP_SERVER: localhost
+  XMPP_DOMAIN: meet.jitsi
+  XMPP_AUTH_DOMAIN: auth.meet.jitsi
+  XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jitsi
+  namespace: app-workadventure-jitsi
+  labels:
+    app.kubernetes.io/name: jitsi
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jitsi
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jitsi
+    spec:
+      containers:
+      - name: jicofo
+        image: jitsi/jicofo
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: jitsi
+        env:
+        - name: JICOFO_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JICOFO_AUTH_PASSWORD
+        - name: JICOFO_COMPONENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JICOFO_COMPONENT_SECRET
+      - name: jvb
+        image: jitsi/jvb
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: jitsi
+        env:
+        - name: JICOFO_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JICOFO_AUTH_PASSWORD
+        - name: JVB_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JVB_AUTH_PASSWORD
+      - name: prosody
+        image: jitsi/prosody
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: jitsi
+        env:
+        - name: JICOFO_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JICOFO_AUTH_PASSWORD
+        - name: JICOFO_COMPONENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JICOFO_COMPONENT_SECRET
+        - name: JVB_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jitsi
+              key: JVB_AUTH_PASSWORD
+      - name: web
+        image: jitsi/web
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: jitsi
